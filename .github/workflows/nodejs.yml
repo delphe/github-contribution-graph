@@ -20,17 +20,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: npm run build --if-present
-    - run: npm test
+    - name: Build and Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v2
       env:
-        CI: true
-    
-  deploy:
-    
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: GitHub Pages Deploy
-        uses: maxheld83/ghpages@v0.2.1
-    
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BASE_BRANCH: master
+        BRANCH: gh-pages
+        FOLDER: dist/github-contribution-graph
+        BUILD_SCRIPT: npm install && npm run build -- --prod
