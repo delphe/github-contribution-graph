@@ -30,7 +30,7 @@ jobs:
         CI: true
 
     - name: Build and Deploy
-      if: gihub.event_name == 'push' && github.ref == 'master'
+      if: github.event_name == 'push' && github.ref == 'master'
       uses: JamesIves/github-pages-deploy-action@releases/v2
       env:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
