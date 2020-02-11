@@ -2,14 +2,16 @@
 
 <div class="container">
     <h2>Find GitHub User</h2>
-    <div class="form-inline">
-        <div class="form-group mx-sm-3 mb-2">
-            <label for="fullname" class="sr-only">Full Name:</label>
-            <input type="text" class="form-control" id="fullname" 
-                placeholder="Full Name" [(ngModel)]="fullname">
+    <form ng-submit="getGitHubUsers(fullname)" >
+        <div class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="fullname" class="sr-only">Full Name:</label>
+                <input type="text" class="form-control" id="fullname" name="fullname"
+                    placeholder="Full Name" [(ngModel)]="fullname">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
         </div>
-        <button class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
-    </div>
+    </form>
 
     <div *ngIf="gitHubUsers.total_count > 0">
         Total Found: <b>{{gitHubUsers.total_count}}</b>
