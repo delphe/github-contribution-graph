@@ -1,1 +1,28 @@
 <app-header></app-header>
+
+<div class="container">
+    <h2>Find GitHub User</h2>
+    <div class="form-inline">
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="fullname" class="sr-only">Full Name:</label>
+            <input type="text" class="form-control" id="fullname" 
+                placeholder="Full Name" [(ngModel)]="fullname">
+        </div>
+        <button class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
+    </div>
+
+    <div *ngIf="gitHubUsers.total_count > 0">
+        Total Found: <b>{{gitHubUsers.total_count}}</b>
+        <ul class="list-group">
+            <li class="list-group-item" *ngFor="let user of gitHubUsers.items">
+                <a href="{{user.html_url}}">{{user.login}}</a>&nbsp;&nbsp;&nbsp;
+                <img src="{{user.avatar_url}}" width="50" height="50">
+            </li>
+        </ul>
+    </div>
+
+    <div *ngIf="gitHubUsers.total_count == 0" class="alert alert-warning" role="alert">
+        No results found!
+    </div>
+    
+</div>
