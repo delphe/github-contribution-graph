@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { version } from '../../package.json';
 import { GitHubApiService } from './githubapi.service';
 
 @Component({
@@ -9,7 +8,6 @@ import { GitHubApiService } from './githubapi.service';
 })
 export class AppComponent {
   title = 'github-contribution-graph';
-  version: string = version;
   fullname: string = "";
   errorMsg: string = "";
   gitHubUsers: any = [];
