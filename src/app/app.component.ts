@@ -11,6 +11,7 @@ export class AppComponent {
   title = 'github-contribution-graph';
   version: string = version;
   fullname: string = "";
+  errorMsg: string = "";
   gitHubUsers: any = [];
 
 
@@ -18,10 +19,15 @@ export class AppComponent {
 
   getGitHubUsers(fullname) {
     this.githubapi.getUsers(fullname)
-      .subscribe((data: {}) => {
-        console.log(data);
-        this.gitHubUsers = data;
-      });
+      .subscribe(
+        (data: {}) => {
+          this.gitHubUsers = data;
+        },
+        error => {
+          console.log(error.message);
+          this.errorMsg = error.message;
+        }
+      );
   }
 
 }
