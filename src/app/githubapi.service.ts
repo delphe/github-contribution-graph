@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { environment } from './../environments/environment';
+import { Observable } from 'rxjs';
+import { GitSearch } from './gitsearch.model';
 
 const localUrl = environment.gitHubApiUrl;
 
@@ -11,9 +13,9 @@ export class GitHubApiService {
 
   constructor(private http: HttpClient) { }
 
-  getUsers(fullname) {
-    return this.http.get(localUrl + "/search/users?q=fullname:" + fullname);
+  getUsers(fullname): Observable<HttpResponse<GitSearch>> {
+    return this.http.get<GitSearch>(
+      localUrl + "/search/users?q=fullname:" + fullname,{ observe: 'response' });
   }
-
   
 }

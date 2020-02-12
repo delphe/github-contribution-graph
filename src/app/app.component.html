@@ -10,6 +10,9 @@
                     placeholder="Full Name" [(ngModel)]="fullname">
             </div>
             <button type="submit" class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
+            <!-- <div *ngIf="rateLimitReset" class="form-group mx-sm-3 mb-2">
+                API Calls Remaining until {{rateLimitReset | date: 'h:mm:ss a z'}} -- <b>{{rateLimitRemaining}}</b>
+            </div> -->
         </div>
     </form>
 

@@ -11,15 +11,17 @@ export class AppComponent {
   fullname: string = "";
   errorMsg: string = "";
   gitHubUsers: any = [];
-
+  rateLimitRemaining: string;
+  rateLimitReset: string;
 
   constructor(private githubapi: GitHubApiService) {}
 
   getGitHubUsers(fullname) {
     this.githubapi.getUsers(fullname)
-      .subscribe(
-        (data: {}) => {
-          this.gitHubUsers = data;
+      .subscribe(resp => {
+        this.rateLimitRemaining = resp.headers.get('X-RateLimit-Remaining');
+        this.rateLimitReset = resp.headers.get('X-RateLimit-Remaining'); 
+        this.gitHubUsers = { ... resp.body };
         },
         error => {
           console.log(error.message);
