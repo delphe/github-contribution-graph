@@ -1,4 +1,4 @@
-# GithubContributionGraph
+# GitHubContributionsGraph
 The objective of this graph is to display a more realistic view of someone's GitHub contribution history.
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.0.1.
