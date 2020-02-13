@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
   constructor(private githubapi: GitHubApiService) {}
 
   ngOnInit() {
-    this.clearCredentials();
+    // this.clearCredentials();
     if (localStorage.getItem('basic_creds')){
       this.authenticated = true;
     }
