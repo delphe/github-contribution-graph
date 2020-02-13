@@ -1,20 +1,78 @@
 <app-header></app-header>
 
 <div class="container">
-    <h2>GitHub User</h2>
-    <form ng-submit="getGitHubUsers(fullname)" >
-        <div class="form-inline">
-            <div class="form-group mx-sm-3 mb-2">
-                <label for="fullname" class="sr-only">Full Name:</label>
-                <input type="text" class="form-control" id="fullname" name="fullname"
-                    placeholder="Full Name" [(ngModel)]="fullname">
-            </div>
-            <button type="submit" class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
-            <!-- <div *ngIf="rateLimitReset" class="form-group mx-sm-3 mb-2">
-                API Calls Remaining until {{rateLimitReset | date: 'h:mm:ss a z'}} -- <b>{{rateLimitRemaining}}</b>
-            </div> -->
+    <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
+        <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg>
+        An error occurred calling the GitHub API!  - {{errorMsg}}
+    </div>
+    
+    <div class="row">
+        <div *ngIf="!authenticated" class="col-lg-6 col-md-6 col-sm-6">
+            <h2>GitHub Login</h2>
+            <form ng-submit="gitHubLogin(username,password)" >
+                <div class="form">
+                    <div class="form-group mx-sm-2 mb-2">
+                        <label for="username" class="sr-only">Username:</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Username" [(ngModel)]="username">
+                    </div>
+                    <div class="form-group mx-sm-2 mb-2">
+                        <label for="password" class="sr-only">Password or PAT:</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="Password or PAT" [(ngModel)]="password">
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2" (click)="gitHubLogin(username,password)">Login</button>
+                    <div *ngIf="authenticationError" class="alert alert-danger" role="alert">
+                        <svg class="octicon octicon-thumbsdown" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 7.83l-.97-5.95C14.84.5 13.13 0 12 0H5.69c-.2 0-.38.05-.53.14L3.72 1H2C.94 1 0 1.94 0 3v4c0 1.06.94 2.02 2 2h2c.91 0 1.39.45 2.39 1.55.91 1 .88 1.8.63 3.27-.08.5.06 1 .42 1.42.39.47.98.76 1.56.76 1.83 0 3-3.71 3-5.01l-.02-.98h2.04c1.16 0 1.95-.8 1.98-1.97 0-.11-.02-.21-.02-.21zm-1.97 1.19h-1.99c-.7 0-1.03.28-1.03.97l.03 1.03c0 1.27-1.17 4-2 4-.5 0-1.08-.5-1-1 .25-1.58.34-2.78-.89-4.14C6.11 8.75 5.36 8 4 8V2l1.67-1H12c.73 0 1.95.31 2 1l.02.02 1 6c-.03.64-.38 1-1 1h-.01z"></path></svg>
+                        {{authenticationError}}
+                    </div>
+                    <div *ngIf="!authenticationError">
+                        <p>Without login, your rate limit is normally 10 API calls every 10 seconds.</p>
+                        <p>Increase your rate limit by logging in.</p>
+                        <p>On July 1st, 2020, using your GitHub password to will no longer work.</p>
+                        <p>Use a <a href="https://github.com/settings/tokens" target="_blank">
+                            personal access token (PAT)</a> with 
+                            <a href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#limiting-scopes-of-a-personal-access-token" target="_blank">
+                                read only access 
+                            </a> instead of your password.</p>
+                    </div>
+                    <p>Don't have a password? <a href="https://github.com/settings/tokens" target="_blank">
+                        Create a GitHub account</a>.
+                    </p>
+                    <div *ngIf="rateLimitRemaining">
+                        <p>API Calls Remaining until {{rateLimitReset | date: 'h:mm:ss a z'}} -- <b>{{rateLimitRemaining}}</b></p>
+                    </div>
+                </div>
+            </form>
         </div>
-    </form>
+        <div [ngClass]="{
+            'col-lg-6 col-md-6 col-sm-6': !authenticated,
+            'col-lg-12 col-md-12 col-sm-12': authenticated
+          }">
+            <h2>GitHub User</h2>
+            <form ng-submit="getGitHubUsers(fullname)" >
+                <div class="form-inline">
+                    <div class="form-group mx-sm-3 mb-2">
+                        <label for="fullname" class="sr-only">Full Name:</label>
+                        <input type="text" class="form-control" id="fullname" name="fullname"
+                            placeholder="Full Name" [(ngModel)]="fullname">
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div *ngIf="!hideWelcomeMessage">
+        <div class="col-12">
+          <p class="alert alert-success">
+            <svg class="octicon octicon-thumbsup" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 8.17l-.97 5.95C14.84 15.5 13.13 16 12 16H5.69c-.2 0-.38-.05-.53-.14L3.72 15H2c-1.06 0-2-.94-2-2V9c0-1.06.94-2.02 2-2h2c.91 0 1.39-.45 2.39-1.55.91-1 .88-1.8.63-3.27-.08-.5.06-1 .42-1.42C7.83.29 8.42 0 9 0c1.83 0 3 3.71 3 5.01l-.02.98h2.04c1.16 0 1.95.8 1.98 1.97 0 .11-.02.21-.02.21zm-1.97-1.19h-1.99c-.7 0-1.03-.28-1.03-.97l.03-1.03c0-1.27-1.17-4-2-4-.5 0-1.08.5-1 1 .25 1.58.34 2.78-.89 4.14C6.11 7.25 5.36 8 4 8v6l1.67 1H12c.73 0 1.95-.31 2-1l.02-.02 1-6c-.03-.64-.38-1-1-1h-.01z"></path></svg>
+            <strong [ngClass] ="FadeOutWelcomeMsg()" >
+            Welcome {{currentUser}}! </strong>
+            <img src="{{currentUserAvatarUrl}}" width="50" height="50">
+          </p>
+        </div>
+      </div>
 
     <div *ngIf="gitHubUsers.total_count > 0">
         Total Found: <b>{{gitHubUsers.total_count}}</b>
@@ -27,13 +85,8 @@
     </div>
 
     <div *ngIf="gitHubUsers.total_count == 0" class="alert alert-warning" role="alert">
-        <svg class="octicon octicon-eye-closed" viewBox="0 0 16 13" version="1.1" width="16" height="13" aria-hidden="true"><path fill-rule="evenodd" d="M14.822.854a.5.5 0 10-.707-.708l-2.11 2.11C10.89 1.483 9.565.926 8.06.926c-5.06 0-8.06 6-8.06 6s1.162 2.323 3.258 4.078l-2.064 2.065a.5.5 0 10.707.707L14.822.854zM4.86 9.403L6.292 7.97A1.999 1.999 0 016 6.925c0-1.11.89-2 2-2 .384 0 .741.106 1.045.292l1.433-1.433A3.98 3.98 0 008 2.925c-2.2 0-4 1.8-4 4 0 .938.321 1.798.859 2.478zm7.005-3.514l1.993-1.992A14.873 14.873 0 0116 6.925s-3 6-7.94 6a6.609 6.609 0 01-2.661-.57l1.565-1.566c.33.089.678.136 1.036.136 2.22 0 4-1.78 4-4 0-.358-.047-.705-.136-1.036zM9.338 8.415l.152-.151a1.996 1.996 0 01-.152.151z"></path></svg>
+        <svg class="octicon octicon-thumbsdown" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 7.83l-.97-5.95C14.84.5 13.13 0 12 0H5.69c-.2 0-.38.05-.53.14L3.72 1H2C.94 1 0 1.94 0 3v4c0 1.06.94 2.02 2 2h2c.91 0 1.39.45 2.39 1.55.91 1 .88 1.8.63 3.27-.08.5.06 1 .42 1.42.39.47.98.76 1.56.76 1.83 0 3-3.71 3-5.01l-.02-.98h2.04c1.16 0 1.95-.8 1.98-1.97 0-.11-.02-.21-.02-.21zm-1.97 1.19h-1.99c-.7 0-1.03.28-1.03.97l.03 1.03c0 1.27-1.17 4-2 4-.5 0-1.08-.5-1-1 .25-1.58.34-2.78-.89-4.14C6.11 8.75 5.36 8 4 8V2l1.67-1H12c.73 0 1.95.31 2 1l.02.02 1 6c-.03.64-.38 1-1 1h-.01z"></path></svg>
         No results found!
-    </div>
-    
-    <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
-        <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg>
-        An error occurred calling the GitHub API!  - {{errorMsg}}
     </div>
     
 </div>
