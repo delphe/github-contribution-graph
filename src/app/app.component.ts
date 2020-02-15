@@ -45,6 +45,7 @@ export class AppComponent implements OnInit {
     this.errorMsg = "";
     this.authenticationError = "";
     const basic_creds = btoa(username + ":"+ password);
+    localStorage.clear();
     localStorage.setItem('basic_creds', JSON.stringify(basic_creds));
     
     this.githubapi.getUserInfo(username)
