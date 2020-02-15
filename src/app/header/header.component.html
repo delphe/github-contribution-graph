@@ -32,6 +32,7 @@
           <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
         </li> -->
       </ul>
-      <a href="https://github.com/delphe/github-contribution-graph/wiki">About</a>
+      <a *ngIf="authenticated" class="nav-link" href="#" (click)="logout(true)">Logout</a>
+      <a class="nav-link" href="https://github.com/delphe/github-contribution-graph/wiki">About</a> 
     </div>
   </nav>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 
 @Component({
   selector: 'app-header',
@@ -7,7 +7,22 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HeaderComponent implements OnInit {
 
+  @Input('parentAuthenticated') authenticated: boolean = false;
+
   constructor() { }
+
+  @Output() loggedOut = new EventEmitter<boolean>();
+
+  // clearCredentials(){
+    
+  // }
+  
+  logout(yes: boolean) {
+    console.log("logout!");
+    this.loggedOut.emit(yes);
+    this.authenticated = false;
+    localStorage.clear();
+  }
 
   isCollapsed = true;
 

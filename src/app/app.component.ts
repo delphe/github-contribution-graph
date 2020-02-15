@@ -1,12 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { GitHubApiService } from './githubapi.service';
-import {
-  trigger,
-  state,
-  style,
-  animate,
-  transition,
-} from '@angular/animations';
 
 @Component({
   selector: 'app-root',
@@ -31,22 +24,21 @@ export class AppComponent implements OnInit {
   hideWelcomeMessage: boolean = true;
 
   constructor(private githubapi: GitHubApiService) {}
-
+  
   ngOnInit() {
-    // this.clearCredentials();
     if (localStorage.getItem('basic_creds')){
       this.authenticated = true;
     }
+  }
+
+  onLogout(yes: boolean) {
+    this.authenticated = false;
   }
 
   FadeOutWelcomeMsg() {
     setTimeout( () => {
       this.hideWelcomeMessage = true;
     }, 4000);
-  }
-
-  clearCredentials(){
-    localStorage.clear();
   }
 
   gitHubLogin(username,password){

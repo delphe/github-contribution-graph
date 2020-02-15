@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header (loggedOut)="onLogout($event)" [parentAuthenticated]="authenticated"></app-header>
 
 <div class="container">
     <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
