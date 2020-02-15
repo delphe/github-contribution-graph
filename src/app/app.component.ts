@@ -24,7 +24,8 @@ export class AppComponent implements OnInit {
   authenticationError: string = "";
   hideWelcomeMessage: boolean = true;
   selectedUser: number = -1;
-  loading: boolean = false;
+  searchButtonLoading: boolean = false;
+  userDetailsloading: boolean = false;
   userDetailsError: string = "";
 
   constructor(private githubapi: GitHubApiService) {}
@@ -58,8 +59,9 @@ export class AppComponent implements OnInit {
     this.authenticationError = "";
     this.hideWelcomeMessage = true;
     this.selectedUser = -1;
-    this.loading = false
+    this.userDetailsloading = false
     this.userDetailsError = "";
+    this.searchButtonLoading = false;
   }
 
   gitHubLogin(username,password){
@@ -85,30 +87,33 @@ export class AppComponent implements OnInit {
 
   getGitHubUsers(fullname) {
     this.clear();
+    this.searchButtonLoading = true;
     this.githubapi.getUsers(fullname)
       .subscribe(resp => {
         this.getRateLimit(resp);
         this.gitHubUsers = { ... resp.body };
+        this.searchButtonLoading = false;
         },
         error => {
           this.handleError(error);
+          this.searchButtonLoading = false;
         }
       );
   }
 
   getGitHubUserInfo(username, selectedItem){
-    this.loading = true;
+    this.userDetailsloading = true;
     this.selectedUser = selectedItem;
     this.githubapi.getUserInfo(username)
       .subscribe(resp => {
           this.getRateLimit(resp);
           this.gitHubUser = resp.body;
-          this.loading = false;
+          this.userDetailsloading = false;
         },
         error => {
           this.userDetailsError = "An error occurred trying to find this user!"
           this.handleError(error);
-          this.loading = false;
+          this.userDetailsloading = false;
         }
       );
   }

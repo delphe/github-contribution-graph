@@ -63,7 +63,10 @@
                         <input type="text" class="form-control" id="fullname" name="fullname"
                             placeholder="Full Name" [(ngModel)]="fullname">
                     </div>
-                    <button type="submit" class="btn btn-primary mb-2" (click)="getGitHubUsers(fullname)">Search</button>
+                    <button class="btn btn-primary mb-2" type="submit" [disabled]="searchButtonLoading" (click)="getGitHubUsers(fullname)">
+                        <span *ngIf="searchButtonLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Search<span *ngIf="searchButtonLoading">ing...</span>
+                      </button>
                 </div>
             </form>
         </div>
@@ -96,7 +99,13 @@
                     <img src="{{user.avatar_url}}" width="50" height="50"> &nbsp;&nbsp;&nbsp;
                     <a href="{{user.html_url}}" target="_blank">GitHub Profile</a> &nbsp;&nbsp;&nbsp;
                 </p>
-                <div *ngIf="selectedUser === i && !loading">
+
+                <!-- User Details -->
+                <div *ngIf="selectedUser === i && userDetailsloading" class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+
+                <div *ngIf="selectedUser === i && !userDetailsloading">
                     <div *ngIf="gitHubUser.name">
                         <svg class="octicon octicon-person" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 14.002a.998.998 0 01-.998.998H1.001A1 1 0 010 13.999V13c0-2.633 4-4 4-4s.229-.409 0-1c-.841-.62-.944-1.59-1-4 .173-2.413 1.867-3 3-3s2.827.586 3 3c-.056 2.41-.159 3.38-1 4-.229.59 0 1 0 1s4 1.367 4 4v1.002z"></path></svg>
                         {{gitHubUser.name}}
@@ -107,10 +116,10 @@
                         {{gitHubUser.company}}
                     </div>
                     <div *ngIf="gitHubUser.public_repos">Total Public Repos: <b>{{gitHubUser.public_repos}}</b></div>
-                    <div *ngIf="!gitHubUser.public_repos || gitHubUser.public_repos == 0"><b>No Public Repositories Found</b></div>
-                    <!-- <div *ngIf="gitHubUser.total_private_repos">Total Private Repos:{{gitHubUser.total_private_repos}}</div> -->
+                    <div *ngIf="!gitHubUser.public_repos || gitHubUser.public_repos == 0"><b>No public repositories found</b></div>
                 </div>
 
+                <!-- User Not Found - API Error -->
                 <div *ngIf="userDetailsError && selectedUser === i" class="alert alert-warning" role="alert">
                     <svg class="octicon octicon-thumbsdown" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 7.83l-.97-5.95C14.84.5 13.13 0 12 0H5.69c-.2 0-.38.05-.53.14L3.72 1H2C.94 1 0 1.94 0 3v4c0 1.06.94 2.02 2 2h2c.91 0 1.39.45 2.39 1.55.91 1 .88 1.8.63 3.27-.08.5.06 1 .42 1.42.39.47.98.76 1.56.76 1.83 0 3-3.71 3-5.01l-.02-.98h2.04c1.16 0 1.95-.8 1.98-1.97 0-.11-.02-.21-.02-.21zm-1.97 1.19h-1.99c-.7 0-1.03.28-1.03.97l.03 1.03c0 1.27-1.17 4-2 4-.5 0-1.08-.5-1-1 .25-1.58.34-2.78-.89-4.14C6.11 8.75 5.36 8 4 8V2l1.67-1H12c.73 0 1.95.31 2 1l.02.02 1 6c-.03.64-.38 1-1 1h-.01z"></path></svg>
                     {{userDetailsError}}
