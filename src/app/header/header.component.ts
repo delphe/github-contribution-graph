@@ -12,10 +12,6 @@ export class HeaderComponent implements OnInit {
   constructor() { }
 
   @Output() loggedOut = new EventEmitter<boolean>();
-
-  // clearCredentials(){
-    
-  // }
   
   logout(yes: boolean) {
     console.log("logout!");
