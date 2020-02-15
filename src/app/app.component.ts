@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
   hideWelcomeMessage: boolean = true;
   selectedUser: number = -1;
   searchButtonLoading: boolean = false;
+  loginButtonLoading: boolean = false;
   userDetailsloading: boolean = false;
   userDetailsError: string = "";
 
@@ -62,14 +63,13 @@ export class AppComponent implements OnInit {
     this.userDetailsloading = false
     this.userDetailsError = "";
     this.searchButtonLoading = false;
+    this.loginButtonLoading = false;
   }
 
   gitHubLogin(username,password){
     this.clear();
-    const basic_creds = btoa(username + ":"+ password);
+    this.loginButtonLoading = true;
     localStorage.clear();
-    localStorage.setItem('basic_creds', JSON.stringify(basic_creds));
-    
     this.githubapi.getUserInfo(username)
       .subscribe(resp => {
           this.getRateLimit(resp);
@@ -77,10 +77,14 @@ export class AppComponent implements OnInit {
           this.currentUserAvatarUrl = resp.body.avatar_url;
           this.authenticated = true;
           this.hideWelcomeMessage = false;
+          const basic_creds = btoa(username + ":"+ password);
+          localStorage.setItem('basic_creds', JSON.stringify(basic_creds));
+          this.loginButtonLoading = false;
         },
         error => {
           this.authenticationError = "An error occurred attempting to authenticate! " + error.message;
           this.authenticated = false;
+          this.loginButtonLoading = false;
         }
       );    
   }
