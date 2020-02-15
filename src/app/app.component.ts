@@ -102,20 +102,24 @@ export class AppComponent implements OnInit {
   }
 
   getGitHubUserInfo(username, selectedItem){
-    this.userDetailsloading = true;
-    this.selectedUser = selectedItem;
-    this.githubapi.getUserInfo(username)
-      .subscribe(resp => {
-          this.getRateLimit(resp);
-          this.gitHubUser = resp.body;
-          this.userDetailsloading = false;
-        },
-        error => {
-          this.userDetailsError = "An error occurred trying to find this user!"
-          this.handleError(error);
-          this.userDetailsloading = false;
-        }
-      );
+    if(selectedItem == this.selectedUser){
+      this.selectedUser = -1;
+    }else{
+      this.userDetailsloading = true;
+      this.selectedUser = selectedItem;
+      this.githubapi.getUserInfo(username)
+        .subscribe(resp => {
+            this.getRateLimit(resp);
+            this.gitHubUser = resp.body;
+            this.userDetailsloading = false;
+          },
+          error => {
+            this.userDetailsError = "An error occurred trying to find this user!"
+            this.handleError(error);
+            this.userDetailsloading = false;
+          }
+        );
+    }
   }
 
   handleError(error){
