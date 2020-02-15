@@ -1,12 +1,16 @@
 <app-header (loggedOut)="onLogout($event)" [parentAuthenticated]="authenticated"></app-header>
 
 <div class="container">
+
+    <!-- GitHub API Error Message -->
     <div *ngIf="errorMsg" class="alert alert-danger" role="alert">
         <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg>
         An error occurred calling the GitHub API!  - {{errorMsg}}
     </div>
 
     <div class="row">
+
+        <!-- Authentication -->
         <div *ngIf="!authenticated" class="col-lg-6 col-md-6 col-sm-6">
             <h2>GitHub Login</h2>
             <form ng-submit="gitHubLogin(username,password)" >
@@ -45,6 +49,8 @@
                 </div>
             </form>
         </div>
+
+        <!-- GitHub User Input -->
         <div [ngClass]="{
             'col-lg-6 col-md-6 col-sm-6': !authenticated,
             'col-lg-12 col-md-12 col-sm-12': authenticated
@@ -62,7 +68,8 @@
             </form>
         </div>
     </div>
-    
+
+    <!-- Welcome Message -->
     <div *ngIf="!hideWelcomeMessage">
         <div class="col-12">
           <p class="alert alert-success">
@@ -74,16 +81,46 @@
         </div>
       </div>
 
+    <!-- List of Users Found -->
     <div *ngIf="gitHubUsers.total_count > 0">
         Total Found: <b>{{gitHubUsers.total_count}}</b>
         <ul class="list-group">
-            <li class="list-group-item" *ngFor="let user of gitHubUsers.items">
-                <a href="{{user.html_url}}">{{user.login}}</a>&nbsp;&nbsp;&nbsp;
-                <img src="{{user.avatar_url}}" width="50" height="50">
+            <li class="list-group-item" *ngFor="let user of gitHubUsers.items; index as i">
+                <p (click)="getGitHubUserInfo(user.login, i)">
+                    <svg class="octicon octicon-triangle-right" *ngIf="selectedUser != i"
+                        viewBox="0 0 6 16" version="1.1" width="6" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 14l6-6-6-6v12z"></path></svg>
+                    <svg class="octicon octicon-triangle-down" *ngIf="selectedUser === i"
+                        viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 5l6 6 6-6H0z"></path></svg>
+                    &nbsp;&nbsp;&nbsp;
+                    {{user.login}} &nbsp;&nbsp;&nbsp;
+                    <img src="{{user.avatar_url}}" width="50" height="50"> &nbsp;&nbsp;&nbsp;
+                    <a href="{{user.html_url}}" target="_blank">GitHub Profile</a> &nbsp;&nbsp;&nbsp;
+                </p>
+                <div *ngIf="selectedUser === i && !loading">
+                    <div *ngIf="gitHubUser.name">
+                        <svg class="octicon octicon-person" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 14.002a.998.998 0 01-.998.998H1.001A1 1 0 010 13.999V13c0-2.633 4-4 4-4s.229-.409 0-1c-.841-.62-.944-1.59-1-4 .173-2.413 1.867-3 3-3s2.827.586 3 3c-.056 2.41-.159 3.38-1 4-.229.59 0 1 0 1s4 1.367 4 4v1.002z"></path></svg>
+                        {{gitHubUser.name}}
+                    </div>
+                    <div *ngIf="gitHubUser.bio" class="col-sm-12 col-md-8 col-lg-6"><i>{{gitHubUser.bio}}</i></div>
+                    <div *ngIf="gitHubUser.company">
+                        <svg class="octicon octicon-organization" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M16 12.999c0 .439-.45 1-1 1H7.995c-.539 0-.994-.447-.995-.999H1c-.54 0-1-.561-1-1 0-2.634 3-4 3-4s.229-.409 0-1c-.841-.621-1.058-.59-1-3 .058-2.419 1.367-3 2.5-3s2.442.58 2.5 3c.058 2.41-.159 2.379-1 3-.229.59 0 1 0 1s1.549.711 2.42 2.088C9.196 9.369 10 8.999 10 8.999s.229-.409 0-1c-.841-.62-1.058-.59-1-3 .058-2.419 1.367-3 2.5-3s2.437.581 2.495 3c.059 2.41-.158 2.38-1 3-.229.59 0 1 0 1s3.005 1.366 3.005 4z"></path></svg>
+                        {{gitHubUser.company}}
+                    </div>
+                    <div *ngIf="gitHubUser.public_repos">Total Public Repos: <b>{{gitHubUser.public_repos}}</b></div>
+                    <div *ngIf="!gitHubUser.public_repos || gitHubUser.public_repos == 0"><b>No Public Repositories Found</b></div>
+                    <!-- <div *ngIf="gitHubUser.total_private_repos">Total Private Repos:{{gitHubUser.total_private_repos}}</div> -->
+                </div>
+
+                <div *ngIf="userDetailsError && selectedUser === i" class="alert alert-warning" role="alert">
+                    <svg class="octicon octicon-thumbsdown" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 7.83l-.97-5.95C14.84.5 13.13 0 12 0H5.69c-.2 0-.38.05-.53.14L3.72 1H2C.94 1 0 1.94 0 3v4c0 1.06.94 2.02 2 2h2c.91 0 1.39.45 2.39 1.55.91 1 .88 1.8.63 3.27-.08.5.06 1 .42 1.42.39.47.98.76 1.56.76 1.83 0 3-3.71 3-5.01l-.02-.98h2.04c1.16 0 1.95-.8 1.98-1.97 0-.11-.02-.21-.02-.21zm-1.97 1.19h-1.99c-.7 0-1.03.28-1.03.97l.03 1.03c0 1.27-1.17 4-2 4-.5 0-1.08-.5-1-1 .25-1.58.34-2.78-.89-4.14C6.11 8.75 5.36 8 4 8V2l1.67-1H12c.73 0 1.95.31 2 1l.02.02 1 6c-.03.64-.38 1-1 1h-.01z"></path></svg>
+                    {{userDetailsError}}
+                </div>
+                
             </li>
         </ul>
     </div>
 
+    <!-- No Users Found Message -->
     <div *ngIf="gitHubUsers.total_count == 0" class="alert alert-warning" role="alert">
         <svg class="octicon octicon-thumbsdown" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15.98 7.83l-.97-5.95C14.84.5 13.13 0 12 0H5.69c-.2 0-.38.05-.53.14L3.72 1H2C.94 1 0 1.94 0 3v4c0 1.06.94 2.02 2 2h2c.91 0 1.39.45 2.39 1.55.91 1 .88 1.8.63 3.27-.08.5.06 1 .42 1.42.39.47.98.76 1.56.76 1.83 0 3-3.71 3-5.01l-.02-.98h2.04c1.16 0 1.95-.8 1.98-1.97 0-.11-.02-.21-.02-.21zm-1.97 1.19h-1.99c-.7 0-1.03.28-1.03.97l.03 1.03c0 1.27-1.17 4-2 4-.5 0-1.08-.5-1-1 .25-1.58.34-2.78-.89-4.14C6.11 8.75 5.36 8 4 8V2l1.67-1H12c.73 0 1.95.31 2 1l.02.02 1 6c-.03.64-.38 1-1 1h-.01z"></path></svg>
         No results found!

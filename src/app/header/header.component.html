@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="https://github.com"><img src="assets/images/daftpunktocat-thomas.gif" width="50" height="50"></a>
+    <a class="navbar-brand" href="https://github.com" target="_blank"><img src="assets/images/daftpunktocat-thomas.gif" width="50" height="50"></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" (click)="isCollapsed = !isCollapsed" [attr.aria-expanded]="!isCollapsed">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -10,10 +10,10 @@
           <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="https://github.com/delphe/github-contribution-graph">Repo</a>
+          <a class="nav-link" href="https://github.com/delphe/github-contribution-graph" target="_blank">Repo</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="https://github.com/delphe/github-contribution-graph/issues">Issues</a>
+            <a class="nav-link" href="https://github.com/delphe/github-contribution-graph/issues" target="_blank">Issues</a>
         </li>
         
         <!--
@@ -32,7 +32,7 @@
           <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
         </li> -->
       </ul>
-      <a *ngIf="authenticated" class="nav-link" href="#" (click)="logout(true)">Logout</a>
-      <a class="nav-link" href="https://github.com/delphe/github-contribution-graph/wiki">About</a> 
+      <a *ngIf="authenticated" class="nav-link" href="#" (click)="logout(true)" style="padding-left:0rem;">Logout</a>
+      <a class="nav-link" href="https://github.com/delphe/github-contribution-graph/wiki" target="_blank" style="padding-left:0rem;">About</a> 
     </div>
   </nav>

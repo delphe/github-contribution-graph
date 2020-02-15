@@ -14,14 +14,18 @@ export class AppComponent implements OnInit {
   password: string = "";
   errorMsg: string = "";
   gitHubUsers: any = [];
-  rateLimit: string;
-  rateLimitRemaining: string;
-  rateLimitReset: string;
+  gitHubUser: any = {};
+  rateLimit: string = "";
+  rateLimitRemaining: string = "";
+  rateLimitReset: string = "";
   authenticated: boolean = false;
   currentUser: string = "";
   currentUserAvatarUrl: string = "";
   authenticationError: string = "";
   hideWelcomeMessage: boolean = true;
+  selectedUser: number = -1;
+  loading: boolean = false;
+  userDetailsError: string = "";
 
   constructor(private githubapi: GitHubApiService) {}
   
@@ -41,9 +45,25 @@ export class AppComponent implements OnInit {
     }, 4000);
   }
 
-  gitHubLogin(username,password){
+  clear(){
+    this.fullname =  "";
+    this.username = "";
+    this.password = "";
     this.errorMsg = "";
+    this.gitHubUsers = [];
+    this.gitHubUser = {};
+    this.rateLimit = "";
+    this.rateLimitRemaining = "";
+    this.rateLimitReset = "";
     this.authenticationError = "";
+    this.hideWelcomeMessage = true;
+    this.selectedUser = -1;
+    this.loading = false
+    this.userDetailsError = "";
+  }
+
+  gitHubLogin(username,password){
+    this.clear();
     const basic_creds = btoa(username + ":"+ password);
     localStorage.clear();
     localStorage.setItem('basic_creds', JSON.stringify(basic_creds));
@@ -64,20 +84,41 @@ export class AppComponent implements OnInit {
   }
 
   getGitHubUsers(fullname) {
-    this.errorMsg = "";
+    this.clear();
     this.githubapi.getUsers(fullname)
       .subscribe(resp => {
         this.getRateLimit(resp);
         this.gitHubUsers = { ... resp.body };
         },
         error => {
-          this.errorMsg = error.message;
-          if(error.status === 401 || error.status === 403){
-            this.errorMsg = "Authentication Failure! Please try logging in again.";
-            this.authenticated = false;
-          }
+          this.handleError(error);
         }
       );
+  }
+
+  getGitHubUserInfo(username, selectedItem){
+    this.loading = true;
+    this.selectedUser = selectedItem;
+    this.githubapi.getUserInfo(username)
+      .subscribe(resp => {
+          this.getRateLimit(resp);
+          this.gitHubUser = resp.body;
+          this.loading = false;
+        },
+        error => {
+          this.userDetailsError = "An error occurred trying to find this user!"
+          this.handleError(error);
+          this.loading = false;
+        }
+      );
+  }
+
+  handleError(error){
+    this.errorMsg = error.message;
+    if(error.status === 401 || error.status === 403){
+      this.errorMsg = "Authentication Failure! Please try logging in again.";
+      this.authenticated = false;
+    }
   }
 
   getRateLimit(resp){
