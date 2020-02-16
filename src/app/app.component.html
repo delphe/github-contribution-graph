@@ -132,8 +132,9 @@
                             <!-- List of Repos -->
                             <ul class="list-group">
                                 <li class="list-group-item" *ngFor="let repo of gitHubRepos; index as i">
-                                    <a href="{{repo.html_url}}" target="_blank">{{repo.name}}</a> &nbsp;&nbsp;&nbsp;
-                                    {{repo.description}}
+                                    <a href="{{repo.html_url}}" target="_blank">{{repo.name}}</a> &nbsp;&nbsp;
+                                    <span *ngIf="repo.fork"><small>(forked)</small></span>
+                                    <p>{{repo.description}}</p>
                                 </li>
                             </ul>
 
