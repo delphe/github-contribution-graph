@@ -1,9 +1,12 @@
 name: Node.js CI
 
 on:
-  # Trigger the workflow on push,
+  # Trigger the workflow on push or pull_request,
   # but only for the master branch
   push:
+    branches:
+      - master
+  pull_request:
     branches:
       - master
 
@@ -22,7 +25,20 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+
+    - name: Build and Test with Node.js ${{ matrix.node-version }}
+      if: github.event_name == 'pull_request'
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install
+    - run: npm run build --if-present
+    - run: npm test -- --watch false --browsers ChromeHeadless
+      env:
+        CI: true
+
     - name: Build and Deploy
+      if: github.event_name == 'push'
       uses: JamesIves/github-pages-deploy-action@releases/v2
       env:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
