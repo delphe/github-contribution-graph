@@ -1,11 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { GitHubApiService } from './githubapi.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
-  
+  styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .dark-modal .modal-content {
+      background-color: #292b2c;
+      color: white;
+    }
+    .dark-modal .close {
+      color: white;
+    }
+    .light-blue-backdrop {
+      background-color: #5cb3fd;
+    }
+  `]
 })
 export class AppComponent implements OnInit {
   title = 'github-contribution-graph';
@@ -15,6 +28,7 @@ export class AppComponent implements OnInit {
   errorMsg: string = "";
   gitHubUsers: any = [];
   gitHubUser: any = {};
+  gitHubRepos: any = [];
   rateLimit: string = "";
   rateLimitRemaining: string = "";
   rateLimitReset: string = "";
@@ -27,9 +41,12 @@ export class AppComponent implements OnInit {
   searchButtonLoading: boolean = false;
   loginButtonLoading: boolean = false;
   userDetailsloading: boolean = false;
+  reposLoading: boolean = false;
   userDetailsError: string = "";
+  closeResult: string;
+  reReposError: string = "";
 
-  constructor(private githubapi: GitHubApiService) {}
+  constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
   
   ngOnInit() {
     if (localStorage.getItem('basic_creds')){
@@ -54,6 +71,7 @@ export class AppComponent implements OnInit {
     this.errorMsg = "";
     this.gitHubUsers = [];
     this.gitHubUser = {};
+    this.gitHubRepos = [];
     this.rateLimit = "";
     this.rateLimitRemaining = "";
     this.rateLimitReset = "";
@@ -64,6 +82,8 @@ export class AppComponent implements OnInit {
     this.userDetailsError = "";
     this.searchButtonLoading = false;
     this.loginButtonLoading = false;
+    this.reposLoading = false;
+    this.reReposError = "";
   }
 
   gitHubLogin(username,password){
@@ -124,6 +144,25 @@ export class AppComponent implements OnInit {
           }
         );
     }
+  }
+
+  getGitRepos(content, username){
+    this.reposLoading = true;
+    this.reReposError = "";
+    this.errorMsg = "";
+    this.githubapi.getRepos(username)
+        .subscribe(resp => {
+            this.getRateLimit(resp);
+            this.gitHubRepos = resp.body;
+            this.reposLoading = false;
+          },
+          error => {
+            this.reReposError = "An error occurred trying pulling repos for this user!"
+            this.handleError(error);
+            this.reposLoading = false;
+          }
+        );
+    this.modalService.open(content, { scrollable: true });
   }
 
   handleError(error){
