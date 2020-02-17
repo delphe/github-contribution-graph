@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { environment } from './../environments/environment';
 import { Observable } from 'rxjs';
-import { GitSearch } from './gitsearch.model';
-import { GitUser } from './gituser.model';
-import { GitRepos } from './gitrepos.model';
+import { GitSearch } from './models/gitsearch.model';
+import { GitUser } from './models/gituser.model';
+import { GitRepos } from './models/gitrepos.model';
 
 const localUrl = environment.gitHubApiUrl;
 
@@ -28,6 +28,11 @@ export class GitHubApiService {
   getRepos(username){
     return this.http.get<GitRepos>(
       localUrl + "/users/" + username + "/repos",{ observe: 'response' });
+  }
+
+  getContributors(repo,username){
+    return this.http.get<GitRepos>(
+      localUrl + "/repos/" + username + "/" + repo + "/stats/contributors",{ observe: 'response' });
   }
   
 }
