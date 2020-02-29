@@ -52,6 +52,8 @@ export class AppComponent implements OnInit {
   getContributionsError: string = "";
   successfulCalls: number = 0;
   repoOwnerCommits: number = 0;
+  totalRepoContributors: number = 0;
+  totalRepoCommits: number = 0;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
   
@@ -75,11 +77,9 @@ export class AppComponent implements OnInit {
     this.fullname =  "";
     this.username = "";
     this.password = "";
-    this.errorMsg = "";
     this.gitHubUsers = [];
     this.gitHubUser = {};
     this.gitHubRepos = [];
-    this.gitContributors = {};
     this.gitContributions = {};
     this.rateLimit = "";
     this.rateLimitRemaining = "";
@@ -92,12 +92,20 @@ export class AppComponent implements OnInit {
     this.searchButtonLoading = false;
     this.loginButtonLoading = false;
     this.reposLoading = false;
-    this.contributionsLoading = false;
+    this.clearModalData();
+  }
+
+  clearModalData(){
     this.getReposError = "";
-    this.gettingContributorsMsg = "";
-    this.getContributionsError = "";
+    this.errorMsg = "";
     this.successfulCalls = 0;
+    this.contributionsLoading = false;
+    this.getContributionsError = "";
+    this.gettingContributorsMsg = "";
+    this.gitContributors = {};
     this.repoOwnerCommits = 0;
+    this.totalRepoContributors = 0;
+    this.totalRepoCommits = 0;
   }
 
   gitHubLogin(username,password){
@@ -161,9 +169,8 @@ export class AppComponent implements OnInit {
   }
 
   getGitRepos(content, username){
+    this.clearModalData();
     this.reposLoading = true;
-    this.getReposError = "";
-    this.errorMsg = "";
     this.githubapi.getRepos(username)
         .subscribe(resp => {
             this.getRateLimit(resp);
@@ -180,27 +187,25 @@ export class AppComponent implements OnInit {
   }
 
   getGitContributors(username){
-    this.successfulCalls = 0;
+    this.clearModalData();
     this.contributionsLoading = true;
-    this.getContributionsError = "";
-    this.gettingContributorsMsg = "";
-    this.gitContributors = {};
-    //TODO: prevent calls if rate limit is exceeded, check rate limit amount and compare to array length
+    if(this.rateLimitRemaining < this.gitHubRepos){
+      this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos +
+        " repositories exceeds your rate limit of " + this.rateLimitRemaining;
+      //TODO: provide login option if user has not logged in yet.
+      return;
+    }
     for (let repo of this.gitHubRepos) {
       this.githubapi.getContributors(repo.name, username)
         .subscribe(resp => {
           this.getRateLimit(resp);
           if(resp.status === 200){
             this.successfulCalls++;
-            console.log("successfulCalls: " + this.successfulCalls);
             this.gitContributors[repo.name] = resp.body;
             this.consolidateContributions(repo, resp.body);
           }else if(resp.status === 202){
-            this.successfulCalls--;
             this.gettingContributorsMsg = "Computing repository statistics is an expensive operation. " +
               "GitHub is compiling these statistics. Give the job a few moments to complete, and then submit the request again. ";
-          }else{
-            this.successfulCalls--;
           }
           this.contributionsLoading = false;
         },
@@ -211,18 +216,23 @@ export class AppComponent implements OnInit {
         }
       );
     }
-    console.log("-----");
-    console.log("successfulCalls: " + this.successfulCalls);
-    console.log(this.gitContributors);
-
 
   }
 
-  consolidateContributions(repo, contributions){
-    if(contributions?.author?.login == repo?.owner?.login){
-      this.repoOwnerCommits = this.repoOwnerCommits + contributions.total;
-      // this.gitContributions[repo.owner.login] = this.repoOwnerCommits;
+  consolidateContributions(repo, contributions){    
+    for (let contribution of contributions) {
+      this.totalRepoContributors++;
+      this.totalRepoCommits = this.totalRepoCommits + contribution.total;
+      if(contribution?.author?.login == repo?.owner?.login){
+        this.repoOwnerCommits = this.repoOwnerCommits + contribution.total;
+      }
     }
+
+    //TODO:
+      
+      //List of repos & URL
+      //List of contributors, URL, and commits
+    
 
   }
 
