@@ -54,9 +54,10 @@ export class AppComponent implements OnInit {
   repoOwnerCommits: number = 0;
   totalRepoContributors: number = 0;
   totalRepoCommits: number = 0;
+  timer: any;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
-  
+
   ngOnInit() {
     if (localStorage.getItem('basic_creds')){
       this.authenticated = true;
@@ -232,24 +233,51 @@ export class AppComponent implements OnInit {
       
       //List of repos & URL
       //List of contributors, URL, and commits
-    
+  
 
   }
 
   handleError(error){
-    this.errorMsg = error.message;
+    if(error.error.message){
+      this.errorMsg = error.error.message
+    }else{
+      this.errorMsg = error.message;
+    }
     if(error.status === 401 || error.status === 403){
       this.errorMsg = "Authentication Failure! Please try logging in again.";
       this.authenticated = false;
     }
+    console.log(error);
+    if(error.error.message.includes("rate limit exceeded")){
+      this.errorMsg = "API rate limit exceeded!";
+      if(!this.authenticated){
+        this.errorMsg = this.errorMsg + " Please login to increase your rate limit."
+      }
+    }
   }
 
   getRateLimit(resp){
-    //TODO: get current GMT-7 time, subtract from rateLimitReset and start a count-down.
-    //  Once the count gets to 0, only display the rateLimit instead of rateLimitRemaining
     this.rateLimit = resp.headers.get('X-RateLimit-Limit');
-    this.rateLimitReset = resp.headers.get('X-RateLimit-Remaining'); 
     this.rateLimitRemaining = resp.headers.get('X-RateLimit-Remaining');
+    let unix_timestamp = resp.headers.get('X-RateLimit-Reset');
+    let unix_timestamp_milliseconds = unix_timestamp * 1000;
+    var date = new Date(unix_timestamp_milliseconds);
+    clearInterval(this.timer);
+    this.rateLimitCountDown(date.getSeconds());
+  }
+
+  rateLimitCountDown(seconds){
+    var counter = seconds;
+    this.timer = setInterval( () => {
+      this.rateLimitReset = counter.toString();
+      counter--;
+      if(counter < 0 ){
+        //Counter reached 0. Resetting.
+        this.rateLimitRemaining = "";
+        this.rateLimitReset = "";
+        clearInterval(this.timer);
+      }      
+    }, 1000);
   }
 
 }
