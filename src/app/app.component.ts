@@ -190,10 +190,11 @@ export class AppComponent implements OnInit {
   getGitContributors(username){
     this.clearModalData();
     this.contributionsLoading = true;
-    if(this.rateLimitRemaining < this.gitHubRepos){
-      this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos +
+    if(this.rateLimitRemaining < this.gitHubRepos.length){
+      this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos.length +
         " repositories exceeds your rate limit of " + this.rateLimitRemaining;
       //TODO: provide login option if user has not logged in yet.
+      this.contributionsLoading = false;
       return;
     }
     for (let repo of this.gitHubRepos) {
