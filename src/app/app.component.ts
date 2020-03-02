@@ -55,6 +55,7 @@ export class AppComponent implements OnInit {
   totalRepoContributors: number = 0;
   totalRepoCommits: number = 0;
   timer: any;
+  objectKeys = Object.keys;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
 
@@ -229,13 +230,6 @@ export class AppComponent implements OnInit {
         this.repoOwnerCommits = this.repoOwnerCommits + contribution.total;
       }
     }
-
-    //TODO:
-      
-      //List of repos & URL
-      //List of contributors, URL, and commits
-  
-
   }
 
   handleError(error){
