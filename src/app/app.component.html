@@ -144,7 +144,7 @@
                                 class="btn btn-outline-primary mb-2 mr-2" (click)="getGitContributors(user.login)">
                                 <span *ngIf="contributionsLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 <svg *ngIf="!contributionsLoading" class="octicon octicon-graph" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M16 14v1H0V0h1v14h15zM5 13H3V8h2v5zm4 0H7V3h2v10zm4 0h-2V6h2v7z"></path></svg>
-                                Contributions Graph</button>
+                                Contributions Stats</button>
 
                             <div *ngIf="gettingContributorsMsg" class="alert alert-warning" role="alert">
                                 <svg class="octicon octicon-watch" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6 8h2v1H5V5h1v3zm6 0c0 2.22-1.2 4.16-3 5.19V15c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1v-1.81C1.2 12.16 0 10.22 0 8s1.2-4.16 3-5.19V1c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1.81c1.8 1.03 3 2.97 3 5.19zm-1 0c0-2.77-2.23-5-5-5S1 5.23 1 8s2.23 5 5 5 5-2.23 5-5z"></path></svg>
@@ -158,10 +158,10 @@
 
                             <!-- Contributions Statistics -->
                             <div *ngIf="successfulCalls > 0">
-                                <p [ngClass]="{
+                                <p>Repos Stats Found: <b [ngClass]="{
                                     'text-warning': gettingContributorsMsg,
                                     'text-danger': getContributionsError
-                                  }">Repos Stats Found: <b>{{successfulCalls}}</b> out of <b>{{gitHubRepos.length}}</b></p>
+                                  }">{{successfulCalls}}</b> out of <b>{{gitHubRepos.length}}</b></p>
                                 <p *ngIf="totalRepoContributors > 1">Total Commits: <b>{{totalRepoCommits}}</b></p>
                                 <p>Total Commits by <u>{{user.login}}</u>
                                     <span *ngIf="totalRepoContributors < 2"><i>(sole contributor)</i></span>: 
@@ -172,6 +172,16 @@
                                         <b>{{repoOwnerCommits/totalRepoCommits | percent}}</b>
                                     </p>
                                     <p>Total Contributors: <b>{{totalRepoContributors}}</b></p>
+                                </div>
+                                <div *ngFor="let key of objectKeys(gitContributors)">
+                                    Repo: <b>{{key}}</b>
+                                    <div *ngFor="let contribution of gitContributors[key]">
+                                        <ul>
+                                            <li>Contributor: <a href="{{contribution?.author?.html_url}}" target="_blank">
+                                                {{contribution?.author?.login}}</a></li>
+                                            <li>Total Commits: <b>{{contribution?.total}}</b></li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
 
