@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { GitSearch } from './models/gitsearch.model';
 import { GitUser } from './models/gituser.model';
 import { GitRepos } from './models/gitrepos.model';
+import { GitContributors } from './models/gitcontributors.model'
 
 const localUrl = environment.gitHubApiUrl;
 
@@ -31,7 +32,7 @@ export class GitHubApiService {
   }
 
   getContributors(repo,username){
-    return this.http.get<GitRepos>(
+    return this.http.get<GitContributors>(
       localUrl + "/repos/" + username + "/" + repo + "/stats/contributors",{ observe: 'response' });
   }
   
