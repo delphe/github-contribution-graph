@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { GitHubApiService } from './githubapi.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { GitContributor } from './models/gitcontributor.model';
 
 @Component({
   selector: 'app-root',
@@ -204,8 +205,8 @@ export class AppComponent implements OnInit {
           this.getRateLimit(resp);
           if(resp.status === 200){
             this.successfulCalls++;
-            this.gitContributors[repo.name] = resp.body;
-            this.consolidateContributions(repo, resp.body);
+            const contributions = this.consolidateContributions(repo, resp.body);
+            this.gitContributors[repo.name] = contributions;
           }else if(resp.status === 202){
             this.gettingContributorsMsg = "Computing repository statistics is an expensive operation. " +
               "GitHub is compiling these statistics. Give the job a few moments to complete, and then submit the request again. ";
@@ -222,14 +223,21 @@ export class AppComponent implements OnInit {
 
   }
 
-  consolidateContributions(repo, contributions){    
+  consolidateContributions(repo, contributions){  
+    let repoOwnerContributed = false;  
     for (let contribution of contributions) {
       this.totalRepoContributors++;
       this.totalRepoCommits = this.totalRepoCommits + contribution.total;
       if(contribution?.author?.login == repo?.owner?.login){
         this.repoOwnerCommits = this.repoOwnerCommits + contribution.total;
+        repoOwnerContributed = true;
       }
     }
+    if(!repoOwnerContributed){
+      let gitcontributor: GitContributor = {author: repo?.owner, total: 0, weeks: null};
+      contributions.push(gitcontributor);
+    }
+    return contributions.sort((a, b) => (a.total > b.total) ? -1 : 1);;
   }
 
   handleError(error){

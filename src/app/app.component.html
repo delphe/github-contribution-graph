@@ -158,7 +158,7 @@
 
                             <!-- Contributions Statistics -->
                             <div *ngIf="successfulCalls > 0">
-                                <p>Repos Stats Found: <b [ngClass]="{
+                                <p>Repo Stats Found: <b [ngClass]="{
                                     'text-warning': gettingContributorsMsg,
                                     'text-danger': getContributionsError
                                   }">{{successfulCalls}}</b> out of <b>{{gitHubRepos.length}}</b></p>
