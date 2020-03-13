@@ -31,6 +31,11 @@ export class GitHubApiService {
       localUrl + "/users/" + username + "/repos",{ observe: 'response' });
   }
 
+  getReposFromLink(url){
+    return this.http.get<GitRepos>(
+      url,{ observe: 'response' });
+  }
+
   getContributors(repo,username){
     return this.http.get<GitContributors>(
       localUrl + "/repos/" + username + "/" + repo + "/stats/contributors",{ observe: 'response' });

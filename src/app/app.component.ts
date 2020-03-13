@@ -57,6 +57,7 @@ export class AppComponent implements OnInit {
   totalRepoCommits: number = 0;
   timer: any;
   objectKeys = Object.keys;
+  pageLinks: any;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
 
@@ -109,6 +110,7 @@ export class AppComponent implements OnInit {
     this.repoOwnerCommits = 0;
     this.totalRepoContributors = 0;
     this.totalRepoCommits = 0;
+    this.pageLinks = {};
   }
 
   gitHubLogin(username,password){
@@ -177,6 +179,7 @@ export class AppComponent implements OnInit {
     this.githubapi.getRepos(username)
         .subscribe(resp => {
             this.getRateLimit(resp);
+            this.pageLinks = this.parseLinkHeader(resp.headers.get('Link'));
             this.gitHubRepos = resp.body;
             this.reposLoading = false;
           },
@@ -189,12 +192,30 @@ export class AppComponent implements OnInit {
     this.modalService.open(content, { scrollable: true });
   }
 
+  getReposFromLink(url){
+    this.reposLoading = true;
+    this.githubapi.getReposFromLink(url)
+        .subscribe(resp => {
+            this.getRateLimit(resp);
+            this.pageLinks = this.parseLinkHeader(resp.headers.get('Link'));
+            this.gitHubRepos = resp.body;
+            this.reposLoading = false;
+          },
+          error => {
+            this.getReposError = "An error occurred trying pulling repos for this user!"
+            this.handleError(error);
+            this.reposLoading = false;
+          }
+        );
+  }
+
   getGitContributors(username){
     this.clearModalData();
     this.contributionsLoading = true;
     if(this.rateLimitRemaining < this.gitHubRepos.length){
+      var rateLimitRemaining = this.rateLimitRemaining.toString()
       this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos.length +
-        " repositories exceeds your rate limit of " + this.rateLimitRemaining;
+        " repositories exceeds your rate limit of " + rateLimitRemaining;
       //TODO: provide login option if user has not logged in yet.
       this.contributionsLoading = false;
       return;
@@ -206,6 +227,7 @@ export class AppComponent implements OnInit {
           if(resp.status === 200){
             this.successfulCalls++;
             const contributions = this.consolidateContributions(repo, resp.body);
+            //TODO: order by repos with highest total commits by repo owner at the top
             this.gitContributors[repo.name] = contributions;
           }else if(resp.status === 202){
             this.gettingContributorsMsg = "Computing repository statistics is an expensive operation. " +
@@ -268,6 +290,22 @@ export class AppComponent implements OnInit {
     clearInterval(this.timer);
     this.rateLimitCountDown(date.getSeconds());
   }
+
+  /**
+  * Returns pagination links from "Link" header parameter
+  * in form of an object.
+  *
+  * @param header: string - "Link" header parameter string for parsing.
+  */
+ parseLinkHeader(header: string) {
+  const links = {};
+
+  header.split(',').forEach(element => {
+    const m = element.match(/<([^>]*)>; rel="(.*)"/);
+    links[m[2]] = m[1];
+  });
+  return links;
+}
 
   rateLimitCountDown(seconds){
     var counter = seconds;
