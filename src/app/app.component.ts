@@ -193,8 +193,9 @@ export class AppComponent implements OnInit {
     this.clearModalData();
     this.contributionsLoading = true;
     if(this.rateLimitRemaining < this.gitHubRepos.length){
+      var rateLimitRemaining = this.rateLimitRemaining.toString()
       this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos.length +
-        " repositories exceeds your rate limit of " + this.rateLimitRemaining;
+        " repositories exceeds your rate limit of " + rateLimitRemaining;
       //TODO: provide login option if user has not logged in yet.
       this.contributionsLoading = false;
       return;
@@ -206,6 +207,7 @@ export class AppComponent implements OnInit {
           if(resp.status === 200){
             this.successfulCalls++;
             const contributions = this.consolidateContributions(repo, resp.body);
+            //TODO: order by repos with highest total commits by repo owner at the top
             this.gitContributors[repo.name] = contributions;
           }else if(resp.status === 202){
             this.gettingContributorsMsg = "Computing repository statistics is an expensive operation. " +
