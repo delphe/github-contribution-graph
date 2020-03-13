@@ -57,7 +57,7 @@ export class AppComponent implements OnInit {
   totalRepoCommits: number = 0;
   timer: any;
   objectKeys = Object.keys;
-  pageLinks: object;
+  pageLinks: any;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
 
