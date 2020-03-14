@@ -193,6 +193,8 @@
                                     <p>{{repo.description}}</p>
                                 </li>
                             </ul>
+
+                            <!-- Pagination -->
                             <div class="row">
                                 <div class="col">
                                     <a href="#" *ngIf="pageLinks && pageLinks?.first" (click)="getReposFromLink(pageLinks?.first)">◀ first </a>
@@ -206,7 +208,6 @@
                                 <div class="col">
                                     <a href="#" *ngIf="pageLinks && pageLinks?.last" (click)="getReposFromLink(pageLinks?.last)">last ▶ </a>     
                                 </div>
-                                
                             </div>
                             
                             <!-- Bottom button for Contributions Graph -->
