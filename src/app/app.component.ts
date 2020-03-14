@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { GitHubApiService } from './githubapi.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { GitContributor } from './models/gitcontributor.model';
+import { SelectedRepo } from './models/selectedrepo.model';
 
 @Component({
   selector: 'app-root',
@@ -58,6 +59,7 @@ export class AppComponent implements OnInit {
   timer: any;
   objectKeys = Object.keys;
   pageLinks: any;
+  selectedRepos: any;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
 
@@ -111,6 +113,7 @@ export class AppComponent implements OnInit {
     this.totalRepoContributors = 0;
     this.totalRepoCommits = 0;
     this.pageLinks = {};
+    this.selectedRepos = [];
   }
 
   gitHubLogin(username,password){
@@ -179,8 +182,9 @@ export class AppComponent implements OnInit {
     this.githubapi.getRepos(username)
         .subscribe(resp => {
             this.getRateLimit(resp);
-            this.pageLinks = this.parseLinkHeader(resp.headers.get('Link'));
+            this.pageLinks = this.parseLinkHeader(resp.headers);
             this.gitHubRepos = resp.body;
+            this.initializeSelectedRepos(resp.body);
             this.reposLoading = false;
           },
           error => {
@@ -197,8 +201,9 @@ export class AppComponent implements OnInit {
     this.githubapi.getReposFromLink(url)
         .subscribe(resp => {
             this.getRateLimit(resp);
-            this.pageLinks = this.parseLinkHeader(resp.headers.get('Link'));
+            this.pageLinks = this.parseLinkHeader(resp.headers);
             this.gitHubRepos = resp.body;
+            this.initializeSelectedRepos(resp.body);
             this.reposLoading = false;
           },
           error => {
@@ -207,6 +212,25 @@ export class AppComponent implements OnInit {
             this.reposLoading = false;
           }
         );
+  }
+
+  initializeSelectedRepos(gitRepos){
+    for(let repo of gitRepos){
+      let repoObj = {} as SelectedRepo;
+      repoObj.repo = repo.name;
+      repoObj.isSelected = true;
+      this.selectedRepos.push(repoObj);
+    }
+
+    //Getting unique values...
+    var flags = [], uniqueOutput = [], l = this.selectedRepos.length, i;
+    for( i=0; i<l; i++) {
+        if( flags[this.selectedRepos[i].repo]) continue;
+        flags[this.selectedRepos[i].repo] = true;
+        uniqueOutput.push(this.selectedRepos[i]);
+    }
+    this.selectedRepos = uniqueOutput;
+    console.log(this.selectedRepos);
   }
 
   getGitContributors(username){
@@ -294,16 +318,18 @@ export class AppComponent implements OnInit {
   /**
   * Returns pagination links from "Link" header parameter
   * in form of an object.
-  *
-  * @param header: string - "Link" header parameter string for parsing.
   */
- parseLinkHeader(header: string) {
+ parseLinkHeader(header) {
+  var linkHeader = header.get('Link');
   const links = {};
 
-  header.split(',').forEach(element => {
-    const m = element.match(/<([^>]*)>; rel="(.*)"/);
-    links[m[2]] = m[1];
-  });
+  if(linkHeader){
+    linkHeader.split(',').forEach(element => {
+      const m = element.match(/<([^>]*)>; rel="(.*)"/);
+      links[m[2]] = m[1];
+    });
+  }
+  
   return links;
 }
 
