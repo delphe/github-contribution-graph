@@ -100,17 +100,29 @@
         Total Found: <b>{{gitHubUsers.total_count}}</b>
         <ul class="list-group">
             <li class="list-group-item" *ngFor="let user of gitHubUsers.items; index as i">
-                <p (click)="getGitHubUserInfo(user.login, i)">
-                    <svg class="octicon octicon-triangle-right" *ngIf="selectedUser != i"
+                <div class="row" (click)="getGitHubUserInfo(user.login, i)">
+                    <div class="col-sm-1 col-md-1 col-lg-1">
+                        <svg class="octicon octicon-triangle-right" *ngIf="selectedUser != i"
                         viewBox="0 0 6 16" version="1.1" width="6" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 14l6-6-6-6v12z"></path></svg>
                     <svg class="octicon octicon-triangle-down" *ngIf="selectedUser === i"
                         viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 5l6 6 6-6H0z"></path></svg>
-                    &nbsp;&nbsp;&nbsp;
-                    {{user.login}} &nbsp;&nbsp;&nbsp;
-                    <img src="{{user.avatar_url}}" width="50" height="50"> &nbsp;&nbsp;&nbsp;
-                    <a href="{{user.html_url}}" target="_blank">GitHub Profile</a> &nbsp;&nbsp;&nbsp;
-                    <button *ngIf="gitHubUser.public_repos > 0 || selectedUser != i" 
-                        class="btn btn-outline-primary mb-2 mr-2" (click)="getGitRepos(content, user.login)">Repository List</button>
+                    </div>
+                    <div class="col col-md-2 col-lg-2">
+                        {{user.login}}
+                    </div>
+                    <div class="col col-md-2 col-lg-1">
+                        <img src="{{user.avatar_url}}" width="50" height="50">
+                    </div>
+                    <div class="col col-md-2 col-lg-2">
+                        <a href="{{user.html_url}}" target="_blank">GitHub Profile</a>
+                    </div>
+                    <div class="col col-md-3 col-lg-3">
+                        <button *ngIf="gitHubUser.public_repos > 0 || selectedUser != i" 
+                            class="btn btn-outline-primary mb-2 mr-2" 
+                            (click)="getGitRepos(content, user.login)">
+                            Repositories
+                        </button>
+                    </div>
                     
                     <!-- Repository List Modal Window -->
                     <ng-template #content let-modal>
@@ -146,10 +158,16 @@
                                 <svg *ngIf="!contributionsLoading" class="octicon octicon-graph" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M16 14v1H0V0h1v14h15zM5 13H3V8h2v5zm4 0H7V3h2v10zm4 0h-2V6h2v7z"></path></svg>
                                 Contributions Stats</button>
 
-                            <div *ngIf="gettingContributorsMsg" class="alert alert-warning" role="alert">
-                                <svg class="octicon octicon-watch" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6 8h2v1H5V5h1v3zm6 0c0 2.22-1.2 4.16-3 5.19V15c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1v-1.81C1.2 12.16 0 10.22 0 8s1.2-4.16 3-5.19V1c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1.81c1.8 1.03 3 2.97 3 5.19zm-1 0c0-2.77-2.23-5-5-5S1 5.23 1 8s2.23 5 5 5 5-2.23 5-5z"></path></svg>
-                                {{gettingContributorsMsg}}
-                            </div>
+                            <div *ngIf="gettingContributorsMsg || reposWithNoContent" class="alert alert-warning" role="alert">
+                                <span *ngIf="gettingContributorsMsg">
+                                    <svg class="octicon octicon-watch" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6 8h2v1H5V5h1v3zm6 0c0 2.22-1.2 4.16-3 5.19V15c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1v-1.81C1.2 12.16 0 10.22 0 8s1.2-4.16 3-5.19V1c0-.55.45-1 1-1h4c.55 0 1 .45 1 1v1.81c1.8 1.03 3 2.97 3 5.19zm-1 0c0-2.77-2.23-5-5-5S1 5.23 1 8s2.23 5 5 5 5-2.23 5-5z"></path></svg>
+                                    {{gettingContributorsMsg}}
+                                </span>
+                                <span *ngIf="reposWithNoContent">
+                                <svg class="octicon octicon-info" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 01-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 01-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg>
+                                    No content found in the following repo(s): {{reposWithNoContent}}
+                                </span>
+                            </div> 
 
                             <div *ngIf="getContributionsError" class="alert alert-danger" role="alert">
                                 <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg>
@@ -161,7 +179,7 @@
                                 <p>Repo Stats Found: <b [ngClass]="{
                                     'text-warning': gettingContributorsMsg,
                                     'text-danger': getContributionsError
-                                  }">{{successfulCalls}}</b> out of <b>{{gitHubRepos.length}}</b></p>
+                                  }">{{successfulCalls}}</b> out of <b>{{selectedRepos.length}}</b></p>
                                 <p *ngIf="totalRepoContributors > 1">Total Commits: <b>{{totalRepoCommits}}</b></p>
                                 <p>Total Commits by <u>{{user.login}}</u>
                                     <span *ngIf="totalRepoContributors < 2"><i>(sole contributor)</i></span>: 
@@ -186,13 +204,21 @@
                             </div>
 
                             <!-- List of Repos -->
-                            <ul class="list-group" *ngIf="successfulCalls == 0">
-                                <li class="list-group-item" *ngFor="let repo of gitHubRepos; index as i">
-                                    <a href="{{repo.html_url}}" target="_blank">{{repo.name}}</a> &nbsp;&nbsp;
-                                    <span *ngIf="repo.fork"><small>(forked)</small></span>
-                                    <p>{{repo.description}}</p>
-                                </li>
-                            </ul>
+                            <div *ngIf="successfulCalls == 0">
+                                <input type="checkbox" [(ngModel)]="masterSelected" name="list_name" id="masterSelector"
+                                    value="masterSelector" (change)="checkUncheckAll()"/> 
+                                    <label for="masterSelector"><strong>Select/Unselect All</strong></label>
+                                <ul class="list-group">
+                                    <li class="list-group-item" *ngFor="let repo of gitHubRepos; index as i">
+                                        <input type="checkbox" [(ngModel)]="repo.isSelected" name="list_name" 
+                                            value="{{repo.name}}" (change)="isAllSelected()"/> &nbsp;&nbsp;
+                                        <a href="{{repo.html_url}}" target="_blank">{{repo.name}}</a> &nbsp;&nbsp;
+                                        <span *ngIf="repo.fork"><small>(forked)</small></span>
+                                        <p>{{repo.description}}</p>
+                                    </li>
+                                </ul>
+                            </div>
+                            
 
                             <!-- Pagination -->
                             <div class="row">
@@ -227,7 +253,7 @@
                         </div>
                     </ng-template>
         
-                </p>
+                </div>
 
                 <!-- User Details -->
                 <div *ngIf="selectedUser === i && userDetailsloading" class="spinner-border text-primary" role="status">

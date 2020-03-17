@@ -5,5 +5,6 @@ export interface GitRepo {
   html_url: string;
   description: string;
   fork: boolean;
-  owner: GitUser
+  isSelected: boolean;
+  owner: GitUser;
 }
