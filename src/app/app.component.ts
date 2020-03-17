@@ -60,6 +60,9 @@ export class AppComponent implements OnInit {
   objectKeys = Object.keys;
   pageLinks: any;
   selectedRepos: any;
+  checkedList: any;
+  masterSelected: boolean = true;
+  reposWithNoContent: string;
 
   constructor(private githubapi: GitHubApiService, private modalService: NgbModal) {}
 
@@ -85,8 +88,6 @@ export class AppComponent implements OnInit {
     this.password = "";
     this.gitHubUsers = [];
     this.gitHubUser = {};
-    this.gitHubRepos = [];
-    this.gitContributions = {};
     this.rateLimit = "";
     this.rateLimitRemaining = "";
     this.rateLimitReset = "";
@@ -97,12 +98,20 @@ export class AppComponent implements OnInit {
     this.userDetailsError = "";
     this.searchButtonLoading = false;
     this.loginButtonLoading = false;
-    this.reposLoading = false;
+    this.clearRepoData();
     this.clearModalData();
   }
 
-  clearModalData(){
+  clearRepoData(){
+    this.errorMsg = "";
     this.getReposError = "";
+    this.gitHubRepos = [];
+    this.reposLoading = false;
+    this.selectedRepos = [];
+    this.masterSelected = true;
+  }
+
+  clearModalData(){
     this.errorMsg = "";
     this.successfulCalls = 0;
     this.contributionsLoading = false;
@@ -113,7 +122,8 @@ export class AppComponent implements OnInit {
     this.totalRepoContributors = 0;
     this.totalRepoCommits = 0;
     this.pageLinks = {};
-    this.selectedRepos = [];
+    this.gitContributions = {};
+    this.reposWithNoContent = "";
   }
 
   gitHubLogin(username,password){
@@ -177,6 +187,7 @@ export class AppComponent implements OnInit {
   }
 
   getGitRepos(content, username){
+    this.clearRepoData();
     this.clearModalData();
     this.reposLoading = true;
     this.githubapi.getRepos(username)
@@ -203,7 +214,7 @@ export class AppComponent implements OnInit {
             this.getRateLimit(resp);
             this.pageLinks = this.parseLinkHeader(resp.headers);
             this.gitHubRepos = resp.body;
-            this.initializeSelectedRepos(resp.body);
+            this.addSelectedReposFromPagination(resp.body);
             this.reposLoading = false;
           },
           error => {
@@ -216,35 +227,98 @@ export class AppComponent implements OnInit {
 
   initializeSelectedRepos(gitRepos){
     for(let repo of gitRepos){
-      let repoObj = {} as SelectedRepo;
-      repoObj.repo = repo.name;
-      repoObj.isSelected = true;
-      this.selectedRepos.push(repoObj);
+      let selectedRepo = {} as SelectedRepo;
+      repo.isSelected = true;
+      selectedRepo.name = repo.name;
+      selectedRepo.html_url = repo.html_url;
+      selectedRepo.owner = repo.owner;
+      selectedRepo.isSelected = true;
+      this.selectedRepos.push(selectedRepo);
     }
+    this.getUniqueSelectedRepos();
+  }
 
-    //Getting unique values...
+  addSelectedReposFromPagination(gitRepos){
+    var foundInSelectedRepos = false;
+    for (var i = 0; i < gitRepos.length; i++) {
+      if(this.selectedRepos.some(repo => repo.name === gitRepos[i].name)){
+        foundInSelectedRepos = true;
+        gitRepos[i].isSelected = true;
+      }else{
+        gitRepos[i].isSelected = false;
+      }
+    }
+    if(!foundInSelectedRepos){
+      // If none of the repos from were found in the selected repos,
+        // they need to be added. Otherwise, retain the list of which repos 
+        // were selected/unselected
+      this.initializeSelectedRepos(gitRepos);
+    }
+  }
+
+  updateSelectedRepos(){
+    for (var i = 0; i < this.gitHubRepos.length; i++) {
+      if(!this.gitHubRepos[i].isSelected){
+        this.selectedRepos = this.selectedRepos.filter(obj => obj.name !== this.gitHubRepos[i].name);
+      }
+      if(this.gitHubRepos[i].isSelected){
+        let selectedRepo = {} as SelectedRepo;
+        selectedRepo.name = this.gitHubRepos[i].name;
+        selectedRepo.html_url = this.gitHubRepos[i].html_url;
+        selectedRepo.owner = this.gitHubRepos[i].owner;
+        selectedRepo.isSelected = true;
+        this.selectedRepos.push(selectedRepo);
+      }
+    }
+    this.getUniqueSelectedRepos();
+  }
+
+  getUniqueSelectedRepos(){
     var flags = [], uniqueOutput = [], l = this.selectedRepos.length, i;
     for( i=0; i<l; i++) {
-        if( flags[this.selectedRepos[i].repo]) continue;
-        flags[this.selectedRepos[i].repo] = true;
+        if( flags[this.selectedRepos[i].name]) continue;
+        flags[this.selectedRepos[i].name] = true;
         uniqueOutput.push(this.selectedRepos[i]);
     }
     this.selectedRepos = uniqueOutput;
-    console.log(this.selectedRepos);
+  }
+
+  checkUncheckAll() {
+    for (var i = 0; i < this.gitHubRepos.length; i++) {
+      this.gitHubRepos[i].isSelected = this.masterSelected;
+    }
+    this.getCheckedItemList();
+  }
+
+  isAllSelected() {
+    this.masterSelected = this.gitHubRepos.every(function(item:any) {
+        return item.isSelected == true;
+      })
+    this.getCheckedItemList();
+  }
+
+  getCheckedItemList(){
+    this.checkedList = [];
+    for (var i = 0; i < this.gitHubRepos.length; i++) {
+      if(this.gitHubRepos[i].isSelected){
+        this.checkedList.push(this.gitHubRepos[i]);
+      }      
+    }
+    this.updateSelectedRepos();
+    this.checkedList = JSON.stringify(this.checkedList);
   }
 
   getGitContributors(username){
     this.clearModalData();
     this.contributionsLoading = true;
-    if(this.rateLimitRemaining < this.gitHubRepos.length){
-      var rateLimitRemaining = this.rateLimitRemaining.toString()
+    if(this.rateLimitRemaining < this.selectedRepos.length && this.rateLimitReset){
       this.getContributionsError = "Obtaining contributions history for " + this.gitHubRepos.length +
-        " repositories exceeds your rate limit of " + rateLimitRemaining;
+        " repositories exceeds your rate limit. Please try again in " + this.rateLimitReset + " seconds.";
       //TODO: provide login option if user has not logged in yet.
       this.contributionsLoading = false;
       return;
     }
-    for (let repo of this.gitHubRepos) {
+    for (let repo of this.selectedRepos) {
       this.githubapi.getContributors(repo.name, username)
         .subscribe(resp => {
           this.getRateLimit(resp);
@@ -256,6 +330,12 @@ export class AppComponent implements OnInit {
           }else if(resp.status === 202){
             this.gettingContributorsMsg = "Computing repository statistics is an expensive operation. " +
               "GitHub is compiling these statistics. Give the job a few moments to complete, and then submit the request again. ";
+          }else if(resp.status === 204){
+            if(this.reposWithNoContent){
+              this.reposWithNoContent = this.reposWithNoContent + ", " + repo.name;
+            }else{
+              this.reposWithNoContent = repo.name;
+            }
           }
           this.contributionsLoading = false;
         },
@@ -266,7 +346,6 @@ export class AppComponent implements OnInit {
         }
       );
     }
-
   }
 
   consolidateContributions(repo, contributions){  
